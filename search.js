@@ -1,42 +1,48 @@
-var json = (function () {
-    var json = null;
+const json = (function () {
+    var jsonData = null;
     $.ajax({
         'async': false,
         'global': false,
         'url': "/assets/plants.json",
         'dataType': "json",
         'success': function (data) {
-            json = data;
+            jsonData = data;
         }
     });
-    return json;
-})(); 
+    return jsonData;
+})();
 
-$('#search-form').keyup(function(){
-            var searchField = $(this).val();
-			if(searchField === '')  {
-				$('#filter-records').html('');
-				return;
-			}
-			
-            var regex = new RegExp(searchField, "i");
-            var output = '<div class="row">';
-            var count = 1;
-			  $.each(data, function(key, val){
-				if ((val.Name.search(regex) != -1) || (val.Scientific Name.search(regex) != -1) || (val.Description.search(regex) != -1) || || (val.Plant Type.search(regex) != -1) || (val.Lifespan.search(regex) != -1) || (val.Spread.search(regex) != -1) || (val.Toxicity.search(regex) != -1) {
-				  output += '<div class="col-md-6 well">';
-				  output += '<div class="col-md-3"><img class="img-responsive" src="'+val.profile_image+'" alt="'+ val.employee_name +'" /></div>';
-				  output += '<div class="col-md-7">';
-				  output += '<h5>' + val.employee_name + '</h5>';
-				  output += '<p>' + val.employee_salary + '</p>'
-				  output += '</div>';
-				  output += '</div>';
-				  if(count%2 == 0){
-					output += '</div><div class="row">'
-				  }
-				  count++;
-				}
-			  });
-			  output += '</div>';
-			  $('#filter-records').html(output);
+
+$(document).ready(function(){
+    $("#search").keyup(function(){
+        $("div").each(function(){
+            if ($(this).text().search(new RegExp(filter, "i")) < 0) {
+                $(this).fadeOut();
+
+            } else {
+                $(this).show();
+            }
         });
+    })
+});
+
+
+function searchQuery() {
+    // redirects to various result
+    let location = document.location.pathname.substring(1).split(".")[0] // Location will be outside_concourse for example
+    let query = document.getElementById("search__val").value;
+    let items = json[location].filter(x => x.Name.toLowerCase().includes(query))
+    if (items) {
+        let listIndex = 0;
+        for (let i = 0; i < items.length; i++) {
+            let index = json[location].indexOf(items[i])
+            if (document.location.hash == `#plant-${index}`) {
+                listIndex = (i + 1) % items.length;
+                break;
+            }
+        }
+        let index = json[location].indexOf(items[listIndex])
+        document.location.href = document.location.href.replace(document.location.hash,"") + `#plant-${index}`;
+    }
+    return false;
+}
